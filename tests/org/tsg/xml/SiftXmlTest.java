@@ -4,9 +4,10 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.tsg.xml.SiftXml;
 import org.tsg.xml.SiftXml.XmlElement;
 
-public class SiftXmlTest{
+public class SiftXmlTest {
 
 	@Before
 	public void setUp() {}

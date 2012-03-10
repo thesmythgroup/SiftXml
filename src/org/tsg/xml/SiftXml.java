@@ -28,6 +28,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -104,7 +105,7 @@ public class SiftXml {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target({ElementType.TYPE, ElementType.FIELD})
 	public @interface XmlElement {
-		String name();
+		String name() default NULL;
 		boolean anyChild() default false;
 		String xmlns() default NULL;
 		
@@ -134,10 +135,18 @@ public class SiftXml {
 		Class mClassArray;
 		LinkedList<String> mClassHintQueue;
 		
+		/**
+		 * 
+		 * @return
+		 */
 		public Object getResult() {
 			return mResult;
 		}
 		
+		/**
+		 * 
+		 * @param cls
+		 */
 		public void setClass(Class cls) {
 			if (cls.isArray()) {
 				mClassArray = cls;
@@ -147,45 +156,85 @@ public class SiftXml {
 			}
 		}
 		
-		private boolean isAnnotated(Class cls) {
+		/**
+		 * Determine if class is annotated with XmlElement.
+		 * 
+		 * @param cls
+		 * @return
+		 */
+		protected boolean isAnnotated(Class cls) {
 			if (cls.isArray()) cls = cls.getComponentType();
-			XmlElement annotation = (XmlElement) cls.getAnnotation(XmlElement.class);
-			if (annotation != null) return true;
-			
-			return false;
+			return cls.isAnnotationPresent(XmlElement.class);
 		}
 		
-		private boolean allowAnyChild(Field field) {
-			if (field == null) return false;
+		/**
+		 * Determine if class or field is annotated with XmlElement using
+		 * anyChild=true argument.
+		 * 
+		 * @param el
+		 * @return
+		 */
+		protected boolean allowAnyChild(AnnotatedElement el) {
+			if (el == null) return false;
 			
-			XmlElement ann = (XmlElement) field.getAnnotation(XmlElement.class);
+			XmlElement ann = (XmlElement) el.getAnnotation(XmlElement.class);
 			if (ann != null) return ann.anyChild();
 			
 			return false;
 		}
 		
-		private String getClassHint(Class cls) {
-			String classHint = cls.getName();
+		/**
+		 * Get hint for matching class to xml node. If annotated with
+		 * XmlElement, the `name` argument is used, otherwise the simple name
+		 * of class is used.
+		 * 
+		 * @param cls
+		 * @return
+		 */
+		protected String getClassHint(Class cls) {
+			String classHint = cls.getSimpleName();
 			XmlElement annotation = (XmlElement) cls.getAnnotation(XmlElement.class);
 			if (annotation != null) classHint = annotation.name();
 			return classHint;
 		}
 		
-		private Map<String, Field> getFieldHints(Class cls) {
+		/**
+		 * Return a mapping of field hints and fields. If field is annotated
+		 * with XmlElement, the `name` argument is used, otherwise the name of
+		 * the field is used to match against xml nodes. Field will be ignored
+		 * if annotated with XmlAttribute.
+		 * 
+		 * @param cls
+		 * @return
+		 */
+		protected Map<String, Field> getFieldHints(Class cls) {
 			Map<String, Field> fieldHints = new HashMap<String, Field>();
 			
 			Field[] fields = cls.getFields();
 			for (Field field : fields) {
 				String fieldHint = field.getName();
 				XmlElement annotation = (XmlElement) field.getAnnotation(XmlElement.class);
-				if (annotation != null) fieldHint = annotation.name();
+				
+				if (annotation != null && !annotation.name().equals(XmlElement.NULL)) {
+					fieldHint = annotation.name();
+				} else if (field.isAnnotationPresent(XmlAttribute.class)) {
+					continue;
+				}
+				
 				fieldHints.put(fieldHint, field);
 			}
 			
 			return fieldHints;
 		}
 		
-		private Map<String, Field> getAttrHints(Class cls) {
+		/**
+		 * Return mapping of field hints and fields for those annotated with
+		 * XmlAttribute. All other fields will be ignored.
+		 * 
+		 * @param cls
+		 * @return
+		 */
+		protected Map<String, Field> getAttrHints(Class cls) {
 			Map<String, Field> attrHints = new HashMap<String, Field>();
 			
 			Field[] fields = cls.getFields();
@@ -197,7 +246,13 @@ public class SiftXml {
 			return attrHints;
 		}
 		
-		private void setObjectAttributes(Object object, Attributes attributes) {
+		/**
+		 * Given object, set attribute values on object members.
+		 * 
+		 * @param object
+		 * @param attributes
+		 */
+		protected void setObjectAttributes(Object object, Attributes attributes) {
 			if (attributes == null) return;
 			
 			Map<String, Field> attrHints = getAttrHints(object.getClass());
@@ -214,27 +269,15 @@ public class SiftXml {
 			}
 		}
 		
-		private Object getNewInstance(Class cls, Attributes attrs) {
-			Object object = null;
-			
-			try {
-				
-				if (cls.isArray()) cls = cls.getComponentType();
-				
-				object = cls.newInstance();
-				
-				setObjectAttributes(object, attrs);
-				mObjectQueue.add(0, object);
-				mObjectIndex.put(object, 0);
-				mClassHintQueue.add(0, getClassHint(cls));
-				mFieldHintsQueue.add(0, getFieldHints(cls));
-				
-			} catch (Exception e) { e.printStackTrace(); }
-			
-			return object;
-		}
-		
-		private void setField(Field field, Object object, Object value) {
+		/**
+		 * Set field on object to value. If field is an array, it will be
+		 * initialized if null or extended to accommodate new value.
+		 * 
+		 * @param field
+		 * @param object
+		 * @param value
+		 */
+		protected void setField(Field field, Object object, Object value) {
 			try {
 				
 				Class fieldCls = field.getType();
@@ -260,6 +303,36 @@ public class SiftXml {
 				field.set(object, value);
 				
 			} catch (Exception e) { e.printStackTrace(); }
+		}
+		
+		/**
+		 * Get new instance of class, setting any attributes if available. If
+		 * is array class, will get component type and return that instead.
+		 * 
+		 * @param cls
+		 * @param attrs
+		 * @return
+		 */
+		protected Object getNewInstance(Class cls, Attributes attrs) {
+			Object object = null;
+			
+			try {
+				
+				if (cls.isArray()) cls = cls.getComponentType();
+				
+				object = cls.newInstance();
+				
+				setObjectAttributes(object, attrs);
+				mObjectQueue.add(0, object);
+				mObjectIndex.put(object, 0);
+				mClassHintQueue.add(0, getClassHint(cls));
+				mFieldHintsQueue.add(0, getFieldHints(cls));
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			return object;
 		}
 		
 		@Override
@@ -298,6 +371,7 @@ public class SiftXml {
 			// the name to grab differs:
 			// use qName for Android 2.3, Desktop
 			// use localName for Android2.1, 2.3
+			// TODO this mostly depends on flags set in SAX, should handle this better
 			String name = localName;
 			if (name.length() == 0) name = qName;
 			
@@ -327,6 +401,7 @@ public class SiftXml {
 			// the name to grab differs:
 			// use qName for Android 2.3, Desktop
 			// use localName for Android2.1, 2.3
+			// TODO this mostly depends on flags set in SAX, should handle this better
 			String name = localName;
 			if (name.length() == 0) name = qName;
 			
