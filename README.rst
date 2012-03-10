@@ -185,7 +185,7 @@ Model classes::
         }
     }
 
-Note that both the Root.users member the the User class are both annotated with
+Note that both the Root.users member and the User class are both annotated with
 XmlElement. Currently this is required but might be avoidable in the future.
 
 Type Coercion
