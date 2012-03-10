@@ -1,6 +1,6 @@
 Overview
 ========
-SiftXml is lightweight parser for converting xml into java objects in an
+SiftXml is a lightweight parser for converting xml into java objects in an
 elegant fashion. Regardless of the number of nested nodes, it allows
 you to sift out only the information you're interested in without having to
 design complex models.
@@ -13,12 +13,12 @@ multiple projects on Android with success. Tests are planned for the future.
 Using SiftXml
 =============
 Parsing is done by calling SiftXml.parse(...) with the needed signature. You
-can provide an XMLReader object for use, such as TagSoup for parsing malformed
+can provide an XMLReader object for use such as TagSoup for parsing malformed
 xml/html.
 
 Basic Example
 -------------
-Some xml::
+Xml::
 
     <root>
         <user>
@@ -27,7 +27,7 @@ Some xml::
         </user>
     </root>
 
-A model class::
+Model class::
 
     @XmlElement(name="user")
     public class User {
@@ -42,7 +42,7 @@ Parsing the result::
 
 Nested Nodes
 ------------
-Some xml::
+Xml::
 
     <root>
         <junk>
@@ -59,7 +59,7 @@ Some xml::
         </junk>
     </root>
 
-A model class::
+Model class::
 
     @XmlElement(name="user")
     public class User {
@@ -78,7 +78,7 @@ And parsing the result::
 
 Arrays
 ------
-Some xml::
+Xml::
 
     <root>
         <user>
@@ -102,10 +102,10 @@ Model classes that could be used::
     @XmlElement(name="root")
     public class Root {
     
-        @XmlElement(name="name")
+        @XmlElement(name="name", anyChild=true)
         public String[] names;
         
-        @XmlElement(name="email")
+        @XmlElement(name="email", anyChild=true)
         public String[] emails;
     }
 
@@ -117,30 +117,21 @@ Parsing the result::
 
 XmlElement
 ----------
-This annotation can be used on a class or its members. The 'name' argument
-provides a hint to the parser for what node to match against. If this
-annotation is not present, then the class' simple name or field's name is used
-for the hint.
+This annotation can be used on a class or its members.
 
-Using the examples above, an altered model could look like the following::
+The 'name' argument provides a hint to the parser for what node to match
+against. If this annotation is not present, then the class' simple name
+or field's name is used for the hint.
 
-    @XmlElement(name="user")
-    public class User2 {
-        
-        @XmlElement(name="name")
-        public String mName;
-        
-        @XmlElement(name="email")
-        public String mEmail;
-    }
-
+The 'anyChild' argument tells the parser to match any node to the member
+that is a descendant of the current matched node of the class.
 
 XmlAttribute
 ------------
 This annotation is for grabbing the value of a node's attribute. A related
 class is required for the match.
 
-Some xml::
+Xml::
 
     <root>
         <user uid="a1b2c3">
@@ -149,7 +140,7 @@ Some xml::
         </user>
     </root>
 
-A model class::
+Model class::
 
     @XmlElement(name="user")
     public class User3 {
