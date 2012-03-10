@@ -421,6 +421,10 @@ public class SiftXml {
 				Map<String, Field> fieldHints = mFieldHintsQueue.peek();
 				Field field = fieldHints.get(name);
 				
+				// TODO possible issue here with mObjectIndex being incorrect
+				//      under unknown circumstances. Possibly not getting
+				//      popped correctly. Need tests. anyChild can work around
+				//      issue if suitable for xml doc.
 				if (field != null && (mObjectIndex.get(object) == 1 || allowAnyChild(field))) {
 					Class fieldType = field.getType();
 					

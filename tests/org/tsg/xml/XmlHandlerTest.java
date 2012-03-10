@@ -6,6 +6,7 @@ import java.util.Map;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.tsg.xml.SiftXml.XmlAttribute;
 import org.tsg.xml.SiftXml.XmlElement;
@@ -137,6 +138,12 @@ public class XmlHandlerTest {
 		Assert.assertEquals(object2.getClass(), String.class);
 		
 		// TODO inspect XmlHandler members
+	}
+	
+	@Ignore("not ready yet")
+	@Test
+	public void objectIndex() throws SAXException {
+		mHandler.startDocument();
 	}
 	
 	
