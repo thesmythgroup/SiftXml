@@ -67,7 +67,9 @@ public class SiftXml {
 		SAXParser sp;
 		XMLReader reader = null;
 		try {
+			spf.setFeature("http://xml.org/sax/features/namespaces", true);
 			sp = spf.newSAXParser();
+			
 			reader = sp.getXMLReader();
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
@@ -368,10 +370,7 @@ public class SiftXml {
 		
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-			// the name to grab differs:
-			// use qName for Android 2.3, Desktop
-			// use localName for Android2.1, 2.3
-			// TODO this mostly depends on flags set in SAX, should handle this better
+			// TODO this mostly depends on flags set in SAX, should handle this better with default reader
 			String name = localName;
 			if (name.length() == 0) name = qName;
 			
@@ -398,10 +397,7 @@ public class SiftXml {
 		
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
-			// the name to grab differs:
-			// use qName for Android 2.3, Desktop
-			// use localName for Android2.1, 2.3
-			// TODO this mostly depends on flags set in SAX, should handle this better
+			// TODO this mostly depends on flags set in SAX, should handle this better with default reader
 			String name = localName;
 			if (name.length() == 0) name = qName;
 			
