@@ -1,16 +1,16 @@
 /**
  * Copyright (c) 2012, The Smyth Group
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
  * deal in the Software without restriction, including without limitation the
  * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
  * sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -47,21 +47,22 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
+import java.lang.reflect.Method;
 
 /**
- * 
+ *
  * @author Daniel Skinner <daniel@dasa.cc>
- * 
+ *
  */
-public class SiftXml {
+public final class SiftXml {
+
+	private SiftXml() { }
 
 	/**
 	 * Parse xml.
-	 * 
-	 * @param cls
-	 *          Can be given as Model.class or Model[].class
-	 * @param source
-	 *          String of xml
+	 *
+	 * @param cls Can be given as Model.class or Model[].class
+	 * @param source String of xml
 	 * @return
 	 */
 	public static <T extends Object> T parse(Class cls, String source) {
@@ -86,13 +87,10 @@ public class SiftXml {
 	/**
 	 * Parse xml with provided XMLReader such as TagSoup for malformed html
 	 * parsing.
-	 * 
-	 * @param cls
-	 *          Can be given as Model.class or Model[].class
-	 * @param source
-	 *          String of xml
-	 * @param reader
-	 *          XMLReader instance for use during parsing.
+	 *
+	 * @param cls Can be given as Model.class or Model[].class
+	 * @param source String of xml
+	 * @param reader XMLReader instance for use during parsing.
 	 * @return
 	 */
 	public static <T extends Object> T parse(Class cls, String source, XMLReader reader) {
@@ -149,7 +147,7 @@ public class SiftXml {
 		LinkedList<String> mClassHintQueue;
 
 		/**
-		 * 
+		 *
 		 * @return
 		 */
 		public Object getResult() {
@@ -157,7 +155,7 @@ public class SiftXml {
 		}
 
 		/**
-		 * 
+		 *
 		 * @param cls
 		 */
 		public void setClass(Class cls) {
@@ -171,30 +169,33 @@ public class SiftXml {
 
 		/**
 		 * Determine if class is annotated with XmlElement.
-		 * 
+		 *
 		 * @param cls
 		 * @return
 		 */
 		protected boolean isAnnotated(Class cls) {
-			if (cls.isArray())
+			if (cls.isArray()) {
 				cls = cls.getComponentType();
+			}
 			return cls.isAnnotationPresent(XmlElement.class);
 		}
 
 		/**
 		 * Determine if class or field is annotated with XmlElement using
 		 * anyChild=true argument.
-		 * 
+		 *
 		 * @param el
 		 * @return
 		 */
 		protected boolean allowAnyChild(AnnotatedElement el) {
-			if (el == null)
+			if (el == null) {
 				return false;
+			}
 
 			XmlElement ann = (XmlElement) el.getAnnotation(XmlElement.class);
-			if (ann != null)
+			if (ann != null) {
 				return ann.anyChild();
+			}
 
 			return false;
 		}
@@ -202,15 +203,16 @@ public class SiftXml {
 		/**
 		 * Get hint for matching class to xml node. If annotated with XmlElement,
 		 * the `name` argument is used, otherwise the simple name of class is used.
-		 * 
+		 *
 		 * @param cls
 		 * @return
 		 */
 		protected String getClassHint(Class cls) {
 			String classHint = cls.getSimpleName();
 			XmlElement annotation = (XmlElement) cls.getAnnotation(XmlElement.class);
-			if (annotation != null)
+			if (annotation != null) {
 				classHint = annotation.name();
+			}
 			return classHint;
 		}
 
@@ -219,7 +221,7 @@ public class SiftXml {
 		 * XmlElement, the `name` argument is used, otherwise the name of the field
 		 * is used to match against xml nodes. Field will be ignored if annotated
 		 * with XmlAttribute.
-		 * 
+		 *
 		 * @param cls
 		 * @return
 		 */
@@ -246,7 +248,7 @@ public class SiftXml {
 		/**
 		 * Return mapping of field hints and fields for those annotated with
 		 * XmlAttribute. All other fields will be ignored.
-		 * 
+		 *
 		 * @param cls
 		 * @return
 		 */
@@ -256,8 +258,9 @@ public class SiftXml {
 			Field[] fields = cls.getFields();
 			for (Field field : fields) {
 				XmlAttribute annotation = (XmlAttribute) field.getAnnotation(XmlAttribute.class);
-				if (annotation != null)
+				if (annotation != null) {
 					attrHints.put(annotation.name(), field);
+				}
 			}
 
 			return attrHints;
@@ -265,19 +268,21 @@ public class SiftXml {
 
 		/**
 		 * Given object, set attribute values on object members.
-		 * 
+		 *
 		 * @param object
 		 * @param attributes
 		 */
 		protected void setObjectAttributes(Object object, Attributes attributes) {
-			if (attributes == null)
+			if (attributes == null) {
 				return;
+			}
 
 			Map<String, Field> attrHints = getAttrHints(object.getClass());
 			for (int i = 0; i < attributes.getLength(); ++i) {
 				String key = attributes.getLocalName(i);
-				if (key.length() == 0)
+				if (key.length() == 0) {
 					key = attributes.getQName(i);
+				}
 
 				if (attrHints.containsKey(key)) {
 					Field field = attrHints.get(key);
@@ -293,7 +298,7 @@ public class SiftXml {
 		/**
 		 * Set field on object to value. If field is an array, it will be
 		 * initialized if null or extended to accommodate new value.
-		 * 
+		 *
 		 * @param field
 		 * @param object
 		 * @param value
@@ -337,7 +342,7 @@ public class SiftXml {
 		/**
 		 * Get new instance of class, setting any attributes if available. If is
 		 * array class, will get component type and return that instead.
-		 * 
+		 *
 		 * @param cls
 		 * @param attrs
 		 * @return
@@ -347,8 +352,9 @@ public class SiftXml {
 
 			try {
 
-				if (cls.isArray())
+				if (cls.isArray()) {
 					cls = cls.getComponentType();
+				}
 
 				object = cls.newInstance();
 
@@ -403,8 +409,9 @@ public class SiftXml {
 			// TODO this mostly depends on flags set in SAX, should handle this better
 			// with default reader
 			String name = localName;
-			if (name.length() == 0)
+			if (name.length() == 0) {
 				name = qName;
+			}
 
 			Object object = mObjectQueue.peek();
 
@@ -416,15 +423,17 @@ public class SiftXml {
 				Map<String, Field> fieldHints = mFieldHintsQueue.peek();
 				if (fieldHints != null) {
 					Field field = fieldHints.get(prevStartElem);
+
 					if (field != null) {
 						Class fieldType = field.getType();
-	
+
 						if (!isAnnotated(fieldType)) {
-							if (fieldType.isArray())
+							if (fieldType.isArray()) {
 								fieldType = fieldType.getComponentType();
+							}
 							try {
-								Constructor ct = fieldType.getConstructor(new Class[] { String.class });
-								Object value = ct.newInstance(new Object[] { mBuilder.toString().trim() });
+								Constructor ct = fieldType.getConstructor(new Class[] {String.class});
+								Object value = ct.newInstance(new Object[] {mBuilder.toString().trim()});
 								setField(field, object, value);
 							} catch (Exception e) {
 								e.printStackTrace();
@@ -451,8 +460,9 @@ public class SiftXml {
 
 					// determine if this is an Object member of Root as such members
 					// require an XmlElement annotation
-					if (isAnnotated(fieldType))
+					if (isAnnotated(fieldType)) {
 						getNewInstance(fieldType, attributes);
+					}
 				}
 
 			}
@@ -467,8 +477,9 @@ public class SiftXml {
 			// TODO this mostly depends on flags set in SAX, should handle this better
 			// with default reader
 			String name = localName;
-			if (name.length() == 0)
+			if (name.length() == 0) {
 				name = qName;
+			}
 
 			Object object = mObjectQueue.peek();
 			String classHint = mClassHintQueue.peek();
@@ -498,16 +509,27 @@ public class SiftXml {
 					Class fieldType = field.getType();
 
 					if (!isAnnotated(fieldType)) {
-						if (fieldType.isArray())
+						if (fieldType.isArray()) {
 							fieldType = fieldType.getComponentType();
+						}
+
 						try {
-							Constructor ct = fieldType.getConstructor(new Class[] { String.class });
-							Object value = ct.newInstance(new Object[] { mBuilder.toString().trim() });
+							Constructor ct = fieldType.getConstructor(new Class[] {String.class});
+							Object value = ct.newInstance(new Object[] {mBuilder.toString().trim()});
 							setField(field, object, value);
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
 					}
+				}
+
+				try {
+					Class params[] = {};
+					Object paramsObj[] = {};
+					Method method = object.getClass().getDeclaredMethod("xmlOnEndElement", params);
+					method.invoke(object, paramsObj);
+				} catch (Exception e) {
+					//
 				}
 
 				mBuilder = new StringBuilder();

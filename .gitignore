@@ -2,8 +2,18 @@ bin/*
 .settings/*
 .classpath
 .project
+*.swp
 
 *.class
 *.jar
 *.war
 *.ear
+
+AndroidManifest.xml
+ant.properties
+build.xml
+gen/*
+local.properties
+proguard-project.txt
+project.properties
+res/*
