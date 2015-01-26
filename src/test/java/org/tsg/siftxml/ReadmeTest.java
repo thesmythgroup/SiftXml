@@ -20,7 +20,7 @@ public class ReadmeTest {
     @Test
     public void basicExample() throws IOException, XmlPullParserException {
         String xmlString = "<root><user><name>John Doe</name><email>john@doe.com</email></user></root>";
-        User user = SiftXml.parse(User.class, newInputStream(xmlString));
+        User user = SiftXml.sift(newInputStream(xmlString), User.class);
 
         Assert.assertEquals("John Doe", user.name);
         Assert.assertEquals("john@doe.com", user.email);
@@ -29,8 +29,8 @@ public class ReadmeTest {
     @Test
     public void arrays() throws IOException, XmlPullParserException {
         String xmlString = "<root><user><name>John Doe</name><email>john@doe.com</email></user><user><name>Jane Roe</name><email>jane@roe.com</email></user></root>";
-        User[] users = SiftXml.parse(User[].class, newInputStream(xmlString));
-        Root root = SiftXml.parse(Root.class, newInputStream(xmlString));
+        User[] users = SiftXml.sift(newInputStream(xmlString), User[].class);
+        Root root = SiftXml.sift(newInputStream(xmlString), Root.class);
 
         Assert.assertEquals(2, users.length);
         Assert.assertEquals("John Doe", users[0].name);
@@ -45,7 +45,7 @@ public class ReadmeTest {
     @Test
     public void xmlElement() throws IOException, XmlPullParserException {
         String xmlString = "<root><user><name>John Doe</name><email>john@doe.com</email></user></root>";
-        User2 user = SiftXml.parse(User2.class, newInputStream(xmlString));
+        User2 user = SiftXml.sift(newInputStream(xmlString), User2.class);
 
         Assert.assertEquals("John Doe", user.mName);
         Assert.assertEquals("john@doe.com", user.mEmail);
@@ -54,7 +54,7 @@ public class ReadmeTest {
     @Test
     public void xmlAttribute() throws IOException, XmlPullParserException {
         String xmlString = "<root><user uid=\"a1b2c3\"><name>John Doe</name><email>john@doe.com</email></user></root>";
-        User3 user = SiftXml.parse(User3.class, newInputStream(xmlString));
+        User3 user = SiftXml.sift(newInputStream(xmlString), User3.class);
 
         Assert.assertEquals("John Doe", user.name);
         Assert.assertEquals("john@doe.com", user.email);
@@ -64,7 +64,7 @@ public class ReadmeTest {
     @Test
     public void innerClasses() throws IOException, XmlPullParserException {
         String xmlString = "<root><user><name>John Doe</name><email>john@doe.com</email></user><user><name>Jane Roe</name><email>jane@roe.com</email></user></root>";
-        Root2 root2 = SiftXml.parse(Root2.class, newInputStream(xmlString));
+        Root2 root2 = SiftXml.sift(newInputStream(xmlString), Root2.class);
 
         Assert.assertNotNull(root2.users);
         Assert.assertEquals(2, root2.users.length);
@@ -82,15 +82,15 @@ public class ReadmeTest {
         public String email;
     }
 
-    @Xml("root")
-    public static class Root {
+@Xml("root")
+public static class Root {
 
-        @Xml("user > name")
-        public String[] names;
+    @Xml("user > name")
+    public String[] names;
 
-        @Xml("user > email")
-        public String[] emails;
-    }
+    @Xml("user > email")
+    public String[] emails;
+}
 
     @Xml("root > user")
     public static class User2 {

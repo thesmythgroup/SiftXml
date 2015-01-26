@@ -1,7 +1,6 @@
 package org.tsg.siftxml;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xmlpull.v1.XmlPullParserException;
@@ -10,9 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class SiftXmlTest {
 
@@ -30,7 +27,7 @@ public class SiftXmlTest {
 
     @Test
     public void rssItem() throws IOException, XmlPullParserException {
-        Model.RssItem[] items = SiftXml.parse(Model.RssItem[].class, newInputStream(Model.RssItem.XML));
+        Model.RssItem[] items = SiftXml.sift(newInputStream(Model.RssItem.XML), Model.RssItem[].class);
         assertNotNull("items", items);
         assertEquals("items length", 5, items.length);
         for (Model.RssItem item : items) {
@@ -41,14 +38,14 @@ public class SiftXmlTest {
 
     @Test
     public void rootParse() throws IOException, XmlPullParserException {
-        User user = SiftXml.parse(User.class, newInputStream(User.XML));
+        User user = SiftXml.sift(newInputStream(User.XML), User.class);
         assertTrue("John Doe".equals(user.name));
         assertTrue("john@doe.com".equals(user.email));
     }
 
     @Test
     public void arrayParse() throws IOException, XmlPullParserException {
-        Numbers numbers = SiftXml.parse(Numbers.class, newInputStream(Numbers.XML));
+        Numbers numbers = SiftXml.sift(newInputStream(Numbers.XML), Numbers.class);
 
         assertEquals(5, numbers.ints.length);
         assertTrue(0 == numbers.ints[0]);
@@ -60,14 +57,14 @@ public class SiftXmlTest {
 
     @Test
     public void namespace() throws IOException, XmlPullParserException {
-        User2 user = SiftXml.parse(User2.class, newInputStream(User2.XML));
+        User2 user = SiftXml.sift(newInputStream(User2.XML), User2.class);
         assertTrue("John Doe".equals(user.name));
         assertTrue("john@doe.com".equals(user.email));
     }
 
     @Test
     public void headtail() throws IOException, XmlPullParserException {
-        Item item = SiftXml.parse(Item.class, newInputStream(Item.XML));
+        Item item = SiftXml.sift(newInputStream(Item.XML), Item.class);
         assertEquals("abcd", item.desc);
     }
 

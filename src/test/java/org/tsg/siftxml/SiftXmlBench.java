@@ -19,12 +19,12 @@ public class SiftXmlBench {
     @Benchmark
     public User parseUser() throws IOException, XmlPullParserException {
         InputStream in = new ByteArrayInputStream(User.XML.getBytes());
-        return SiftXml.parse(User.class, in);
+        return SiftXml.sift(in, User.class);
     }
 
     @Benchmark
     public RssItem[] parserRssItem() throws IOException, XmlPullParserException {
-        return SiftXml.parse(RssItem[].class, new ByteArrayInputStream(RssItem.XML.getBytes()));
+        return SiftXml.sift(new ByteArrayInputStream(RssItem.XML.getBytes()), RssItem[].class);
     }
 
     @Xml("user")

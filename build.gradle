@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'ivy-publish'
 
 sourceCompatibility = 1.6
-version = '0.1.0'
+version = '0.1-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -15,6 +15,16 @@ dependencies {
     compile 'net.sf.kxml:kxml2:2.3.0'
 }
 
+task bench(type: JavaExec, dependsOn: [classes, testClasses]) {
+    classpath = sourceSets.test.runtimeClasspath
+    main = "org.tsg.siftxml.Bench";
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.java
+    classifier "source"
+}
+
 publishing {
     publications {
         ivyJava(IvyPublication) {
@@ -22,6 +32,10 @@ publishing {
             organisation 'org.tsg.siftxml'
             module 'siftxml'
             revision version
+            artifact(sourceJar) {
+                type "source"
+                conf "runtime"
+            }
         }
     }
     repositories {
@@ -29,9 +43,4 @@ publishing {
             url "$projectDir/repo"
         }
     }
-}
-
-task bench(type: JavaExec, dependsOn: [classes, testClasses]) {
-    classpath = sourceSets.test.runtimeClasspath
-    main = "org.tsg.siftxml.Bench";
 }

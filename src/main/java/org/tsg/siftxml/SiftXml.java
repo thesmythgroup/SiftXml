@@ -16,10 +16,10 @@ import java.util.List;
 
 public class SiftXml {
 
-    public static <T> T parse(InputStream in, Class<T> cls) throws IOException, XmlPullParserException {
+    public static <T> T sift(InputStream in, Class<T> cls) throws IOException, XmlPullParserException {
         T result = null;
         try {
-            result = new SiftXml().sift(in, cls);
+            result = new SiftXml().parse(in, cls);
         } finally {
             in.close();
         }
@@ -36,11 +36,11 @@ public class SiftXml {
     }
 
     public SiftXml setFeature(String feature, boolean value) throws XmlPullParserException {
-        mParser.setFeature(feature, true);
+        mParser.setFeature(feature, value);
         return this;
     }
 
-    public <T> T sift(InputStream in, Class<T> cls) throws IOException, XmlPullParserException {
+    public <T> T parse(InputStream in, Class<T> cls) throws IOException, XmlPullParserException {
         mParser.setInput(in, null);
 
         if (cls.isArray()) {
@@ -58,7 +58,7 @@ public class SiftXml {
         Index.Entry entry;
         String tag = "";
 
-        while (mParser.next() != XmlPullParser.END_DOCUMENT) {
+        while (mParser.nextToken() != XmlPullParser.END_DOCUMENT) {
             switch (mParser.getEventType()) {
                 case XmlPullParser.START_TAG:
                     tag = mTracker.track(mParser.getDepth(), mParser.getName());
@@ -99,11 +99,22 @@ public class SiftXml {
                     }
                     mTracker.trim(mParser.getDepth() - 1);
                     break;
+                case XmlPullParser.CDSECT:
                 case XmlPullParser.TEXT:
                     tag = mTracker.toString();
                     if (mIndex.contains(tag)) {
                         acc.add(tag, mParser.getText());
                     }
+                    break;
+                case XmlPullParser.IGNORABLE_WHITESPACE:
+                    break;
+                case XmlPullParser.PROCESSING_INSTRUCTION:
+                    break;
+                case XmlPullParser.ENTITY_REF:
+                    break;
+                case XmlPullParser.DOCDECL:
+                    break;
+                case XmlPullParser.COMMENT:
                     break;
                 default:
                     throw new XmlPullParserException("Internal error, unhandled event type: " + mParser.getEventType());
@@ -170,7 +181,6 @@ public class SiftXml {
             }
         }
     }
-
 
     /**
      * Set field on object to value. If field is an array, it will be
