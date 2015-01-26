@@ -1,6 +1,7 @@
 package org.tsg.siftxml;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -28,12 +29,10 @@ class Index {
             Xml annotation = field.getAnnotation(Xml.class);
             if (annotation != null) {
                 String value = annotation.value();
-                if (!Xml.NULL.equals(value)) {
-                    if (",attr".equals(value)) {
-                        fieldHint += value;
-                    } else {
-                        fieldHint = value;
-                    }
+                if (",attr".equals(value)) {
+                    fieldHint += value;
+                } else {
+                    fieldHint = value;
                 }
             }
 
@@ -42,6 +41,22 @@ class Index {
                 create(field.getType().getComponentType(), key, field);
             } else {
                 map.put(key, new Entry(field));
+            }
+        }
+
+        for (Method method : cls.getMethods()) {
+            Xml annotation = method.getAnnotation(Xml.class);
+            // require annotations on methods
+            if (annotation != null) {
+                String hint = method.getName();
+                String value = annotation.value();
+                if (",attr".equals(value)) {
+                    hint += value;
+                } else {
+                    hint = value;
+                }
+                String key = classHint + " > " + hint;
+                map.put(key, new Entry(method));
             }
         }
     }
@@ -100,39 +115,59 @@ class Index {
 
     static class Entry {
 
-        Field field; // null signifies root result
-        Class cls; // null signifies no object nesting
+        // null signifies root result
+        Field field;
+        Method method;
+
+        // null signifies no object nesting
+        Class cls;
 
         private Entry() {
         }
 
         private Entry(Field field) {
-            this(field, null);
+            this(field, null, null);
+        }
+
+        private Entry(Method method) {
+            this(null, method, null);
         }
 
         private Entry(Class cls) {
-            this(null, cls);
+            this(null, null, cls);
         }
 
         private Entry(Field field, Class cls) {
+            this(field, null, cls);
+        }
+
+        private Entry(Field field, Method method, Class cls) {
             this.field = field;
+            this.method = method;
             this.cls = cls;
         }
 
+        public Object getSetter() {
+            if (field != null) {
+                return field;
+            }
+            return method;
+        }
+
         public boolean isEmpty() {
-            return field == null && cls == null;
+            return field == null && method == null && cls == null;
         }
 
         public boolean isRoot() {
-            return field == null && cls != null;
+            return (field == null || method == null) && cls != null;
         }
 
         public boolean isNested() {
-            return field != null && cls != null;
+            return (field != null || method != null) && cls != null;
         }
 
         public boolean isMember() {
-            return field != null && cls == null;
+            return (field != null || method != null) && cls == null;
         }
     }
 }

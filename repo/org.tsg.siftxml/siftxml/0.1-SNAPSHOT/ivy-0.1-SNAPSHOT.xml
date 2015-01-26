@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
-  <info organisation="org.tsg.siftxml" module="siftxml" revision="0.1-SNAPSHOT" status="integration" publication="20150126004323"/>
+  <info organisation="org.tsg.siftxml" module="siftxml" revision="0.1-SNAPSHOT" status="integration" publication="20150126153345"/>
   <configurations>
     <conf name="default" visibility="public" extends="runtime"/>
     <conf name="runtime" visibility="public"/>

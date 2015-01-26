@@ -6,10 +6,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -85,12 +82,7 @@ public class SiftXml {
                     entry = mIndex.match(tag);
                     if (entry.isMember()) {
                         String x = acc.read(tag);
-                        Field field = entry.field;
-                        try {
-                            setField(field, current, makeType(field, x));
-                        } catch (IllegalAccessException e) {
-                            throw new XmlPullParserException(e.getMessage(), mParser, e);
-                        }
+                        setObjectValue(current, entry, x);
                     } else if (entry.isNested() || entry.isRoot()) {
                         queue.pop();
                         current = queue.peek();
@@ -131,27 +123,47 @@ public class SiftXml {
         return (T) result;
     }
 
+    protected Class getFieldType(Field field) {
+        Class type = field.getType();
+        if (type.isArray()) {
+            type = type.getComponentType();
+        }
+        return type;
+    }
+
+    protected Class getMethodType(Method method) {
+        return method.getParameterTypes()[0];
+    }
+
+    protected void setObjectValue(Object obj, Index.Entry entry, String value) throws XmlPullParserException {
+        Object setter = entry.getSetter();
+        if (setter instanceof Field) {
+            Field field = (Field) setter;
+            try {
+                setField(field, obj, makeType(getFieldType(field), value));
+            } catch (IllegalAccessException e) {
+                throw new XmlPullParserException(e.getMessage(), mParser, e);
+            }
+        } else {
+            Method method = (Method) setter;
+            try {
+                method.invoke(obj, makeType(getMethodType(method), value));
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new XmlPullParserException(e.getMessage(), mParser, e);
+            }
+        }
+    }
+
     /**
      * Create new instance of field type, passing string value to constructor.
      */
-    protected Object makeType(Field field, String value) throws XmlPullParserException {
+    protected Object makeType(Class type, String value) throws XmlPullParserException {
         Object obj = null;
 
-        Class fieldType = field.getType();
-        if (fieldType.isArray()) {
-            fieldType = fieldType.getComponentType();
-        }
-
         try {
-            Constructor ct = fieldType.getConstructor(new Class[]{String.class});
+            Constructor ct = type.getConstructor(new Class[]{String.class});
             obj = ct.newInstance(new Object[]{value.trim()});
-        } catch (InstantiationException e) {
-            throw new XmlPullParserException(e.getMessage(), mParser, e);
-        } catch (IllegalAccessException e) {
-            throw new XmlPullParserException(e.getMessage(), mParser, e);
-        } catch (InvocationTargetException e) {
-            throw new XmlPullParserException(e.getMessage(), mParser, e);
-        } catch (NoSuchMethodException e) {
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new XmlPullParserException(e.getMessage(), mParser, e);
         }
 
@@ -159,25 +171,18 @@ public class SiftXml {
     }
 
     /**
-     * Given object, set attribute values on object members.
+     * Given object, set attribute values on object.
      */
-    protected void setObjectAttributes(Object object, XmlPullParser parser) throws XmlPullParserException {
+    protected void setObjectAttributes(Object obj, XmlPullParser parser) throws XmlPullParserException {
         if (parser.getAttributeCount() == 0) {
             return;
         }
 
         for (int i = 0; i < parser.getAttributeCount(); i++) {
             String key = parser.getAttributeName(i);
-            // TODO(d) still need qualified name code here? Did with sax parser depending on android API version.
-
-            Index.Entry obj = mIndex.match(mTracker.toString() + " > " + key + ",attr");
-            if (!obj.isEmpty()) {
-                Field field = obj.field;
-                try {
-                    field.set(object, parser.getAttributeValue(i));
-                } catch (Exception e) {
-                    throw new XmlPullParserException(e.getMessage(), parser, e);
-                }
+            Index.Entry entry = mIndex.match(mTracker.toString() + " > " + key + ",attr");
+            if (!entry.isEmpty()) {
+                setObjectValue(obj, entry, parser.getAttributeValue(i));
             }
         }
     }

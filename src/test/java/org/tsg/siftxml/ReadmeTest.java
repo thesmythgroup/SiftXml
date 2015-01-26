@@ -8,6 +8,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * Sanity check on examples provided in readme.
  */
@@ -22,8 +24,8 @@ public class ReadmeTest {
         String xmlString = "<root><user><name>John Doe</name><email>john@doe.com</email></user></root>";
         User user = SiftXml.sift(newInputStream(xmlString), User.class);
 
-        Assert.assertEquals("John Doe", user.name);
-        Assert.assertEquals("john@doe.com", user.email);
+        assertEquals("John Doe", user.name);
+        assertEquals("john@doe.com", user.email);
     }
 
     @Test
@@ -32,14 +34,14 @@ public class ReadmeTest {
         User[] users = SiftXml.sift(newInputStream(xmlString), User[].class);
         Root root = SiftXml.sift(newInputStream(xmlString), Root.class);
 
-        Assert.assertEquals(2, users.length);
-        Assert.assertEquals("John Doe", users[0].name);
-        Assert.assertEquals("john@doe.com", users[0].email);
-        Assert.assertEquals("Jane Roe", users[1].name);
-        Assert.assertEquals("jane@roe.com", users[1].email);
+        assertEquals(2, users.length);
+        assertEquals("John Doe", users[0].name);
+        assertEquals("john@doe.com", users[0].email);
+        assertEquals("Jane Roe", users[1].name);
+        assertEquals("jane@roe.com", users[1].email);
 
-        Assert.assertEquals(2, root.names.length);
-        Assert.assertEquals(2, root.emails.length);
+        assertEquals(2, root.names.length);
+        assertEquals(2, root.emails.length);
     }
 
     @Test
@@ -47,8 +49,8 @@ public class ReadmeTest {
         String xmlString = "<root><user><name>John Doe</name><email>john@doe.com</email></user></root>";
         User2 user = SiftXml.sift(newInputStream(xmlString), User2.class);
 
-        Assert.assertEquals("John Doe", user.mName);
-        Assert.assertEquals("john@doe.com", user.mEmail);
+        assertEquals("John Doe", user.mName);
+        assertEquals("john@doe.com", user.mEmail);
     }
 
     @Test
@@ -56,9 +58,9 @@ public class ReadmeTest {
         String xmlString = "<root><user uid=\"a1b2c3\"><name>John Doe</name><email>john@doe.com</email></user></root>";
         User3 user = SiftXml.sift(newInputStream(xmlString), User3.class);
 
-        Assert.assertEquals("John Doe", user.name);
-        Assert.assertEquals("john@doe.com", user.email);
-        Assert.assertEquals("a1b2c3", user.uid);
+        assertEquals("John Doe", user.name);
+        assertEquals("john@doe.com", user.email);
+        assertEquals("a1b2c3", user.uid);
     }
 
     @Test
@@ -67,11 +69,21 @@ public class ReadmeTest {
         Root2 root2 = SiftXml.sift(newInputStream(xmlString), Root2.class);
 
         Assert.assertNotNull(root2.users);
-        Assert.assertEquals(2, root2.users.length);
-        Assert.assertEquals("John Doe", root2.users[0].name);
-        Assert.assertEquals("john@doe.com", root2.users[0].email);
-        Assert.assertEquals("Jane Roe", root2.users[1].name);
-        Assert.assertEquals("jane@roe.com", root2.users[1].email);
+        assertEquals(2, root2.users.length);
+        assertEquals("John Doe", root2.users[0].name);
+        assertEquals("john@doe.com", root2.users[0].email);
+        assertEquals("Jane Roe", root2.users[1].name);
+        assertEquals("jane@roe.com", root2.users[1].email);
+    }
+
+    @Test
+    public void methods() throws IOException, XmlPullParserException {
+        String xmlString = "<root><user uid=\"a1b2c3\"><name>John Doe</name><email>john@doe.com</email></user></root>";
+        UserWithMethods user = SiftXml.sift(newInputStream(xmlString), UserWithMethods.class);
+
+        assertEquals("John Doe", user.getName());
+        assertEquals("john@doe.com", user.getEmail());
+        assertEquals("a1b2c3", user.getUid());
     }
 
 	/* classes used for testing */
@@ -82,15 +94,49 @@ public class ReadmeTest {
         public String email;
     }
 
-@Xml("root")
-public static class Root {
+    @Xml("root > user")
+    public static class UserWithMethods {
+        private String mUid;
+        private String mName;
+        private String mEmail;
 
-    @Xml("user > name")
-    public String[] names;
+        public String getUid() {
+            return mUid;
+        }
 
-    @Xml("user > email")
-    public String[] emails;
-}
+        @Xml("uid,attr")
+        public void setUid(String uid) {
+            mUid = uid;
+        }
+
+        public String getName() {
+            return mName;
+        }
+
+        @Xml("name")
+        public void setName(String name) {
+            mName = name;
+        }
+
+        public String getEmail() {
+            return mEmail;
+        }
+
+        @Xml("email")
+        public void setEmail(String email) {
+            mEmail = email;
+        }
+    }
+
+    @Xml("root")
+    public static class Root {
+
+        @Xml("user > name")
+        public String[] names;
+
+        @Xml("user > email")
+        public String[] emails;
+    }
 
     @Xml("root > user")
     public static class User2 {
