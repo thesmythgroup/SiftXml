@@ -38,7 +38,11 @@ class Index {
 
             String key = classHint + " > " + fieldHint;
             if (isAnnotated(field.getType())) {
-                create(field.getType().getComponentType(), key, field);
+                Class fieldType = field.getType();
+                if (fieldType.isArray()) {
+                    fieldType = fieldType.getComponentType();
+                }
+                create(fieldType, key, field);
             } else {
                 map.put(key, new Entry(field));
             }
