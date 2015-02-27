@@ -1,4 +1,4 @@
-package org.tsg.siftxml;
+package com.codesmyth.siftxml;
 
 import java.util.HashMap;
 import java.util.Map;

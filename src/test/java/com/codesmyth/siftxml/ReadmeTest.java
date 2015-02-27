@@ -1,4 +1,4 @@
-package org.tsg.siftxml;
+package com.codesmyth.siftxml;
 
 import org.junit.Assert;
 import org.junit.Test;

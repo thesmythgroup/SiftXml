@@ -1,4 +1,4 @@
-package org.tsg.siftxml;
+package com.codesmyth.siftxml;
 
 public class Model {
     private Model() {

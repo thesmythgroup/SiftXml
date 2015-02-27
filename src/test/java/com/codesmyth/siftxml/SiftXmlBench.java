@@ -1,10 +1,10 @@
-package org.tsg.siftxml;
+package com.codesmyth.siftxml;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.tsg.siftxml.Model.RssItem;
+import com.codesmyth.siftxml.Model.RssItem;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.ByteArrayInputStream;

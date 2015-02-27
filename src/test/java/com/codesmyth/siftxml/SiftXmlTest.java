@@ -1,4 +1,4 @@
-package org.tsg.siftxml;
+package com.codesmyth.siftxml;
 
 import org.junit.After;
 import org.junit.Before;
@@ -23,6 +23,60 @@ public class SiftXmlTest {
 
     public InputStream newInputStream(String x) {
         return new ByteArrayInputStream(x.getBytes());
+    }
+
+    @Test
+    public void reply() throws IOException, XmlPullParserException {
+        Session session = (new SiftXml()).parse(newInputStream(Session.XML), Session.class);
+        assertNotNull(session);
+        assertEquals("user name", "D", session.user.name);
+        assertEquals("client name", "ABC Company", session.user.client);
+
+        assertNotNull("documents", session.docs);
+        assertEquals("document length", 3, session.docs.length);
+        assertEquals("1414565", session.docs[0].jobId);
+        assertEquals("Passport", session.docs[0].desc);
+        assertEquals("Pending", session.docs[0].status);
+    }
+
+    @Xml("Reply")
+    public static class Session {
+        public static final String XML = "<Reply><SessionUser Name=\"D\" Client=\"ABC Company\" UserType=\"Applicant\"/><DocumentsNeeded><Document><JobID>1414565</JobID><Description>Passport</Description><Status>Pending</Status></Document><Document><JobID>1414566</JobID><Description>Drivers License</Description><Status>Pending</Status></Document><Document><JobID>1414567</JobID><Description>Social Security Card</Description><Status>Pending</Status></Document></DocumentsNeeded></Reply>";
+
+        @Xml("DocumentsNeeded > Document")
+        public Document[] docs;
+
+        @Xml("SessionUser")
+        public SessionUser user;
+
+        public String qrcode = "";
+    }
+
+    @Xml("SessionUser")
+    public static class SessionUser {
+        @Xml("Name,attr")
+        public String name;
+
+        @Xml("UserType,attr")
+        public String type;
+
+        @Xml("Client,attr")
+        public String client;
+    }
+
+    @Xml("DocumentsNeeded > Document")
+    public static class Document {
+        @Xml("JobID")
+        public String jobId;
+
+        @Xml("Description")
+        public String desc;
+
+        @Xml("Status")
+        public String status;
+
+        @Xml("TimeRemaining")
+        public String timeRemaining;
     }
 
     @Test
@@ -78,7 +132,7 @@ public class SiftXmlTest {
 
     @Xml("root > extra")
     public static class Numbers {
-        public static final String XML = "<root><extra><int>0</int><int>1</int><int>2</int><int>3</int><int>4</int></extra></root>";
+        public static final String XML = "<root a=\"b\"><extra><int>0</int><int>1</int><int>2</int><int>3</int><int>4</int></extra></root>";
 
         @Xml("int")
         public Integer[] ints;

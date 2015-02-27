@@ -1,9 +1,7 @@
-package org.tsg.siftxml;
+package com.codesmyth.siftxml;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.matchers.JUnitMatchers;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertEquals;
@@ -38,11 +36,11 @@ public class IndexTest {
         mIndex.clear();
 
         mIndex.create(User.class);
-        assertThat(mIndex.keySet(), hasItems("User", "User > id,attr", "User > name"));
+        assertThat(mIndex.keySet(), hasItems("User", "User > id,attr", "User > name", "User > config", "User > config > foo,attr"));
     }
 
     @Xml("user")
-    class UserAnnotated {
+    public static class UserAnnotated {
         @Xml("id,attr")
         public int mId;
 
@@ -50,10 +48,21 @@ public class IndexTest {
         public String mName;
     }
 
-    class User {
+    public static class User {
         @Xml(",attr")
         public int id;
         public String name;
+
+        @Xml("config")
+        public Config config;
     }
 
+    @Xml("config")
+    public static class Config {
+        @Xml("foo,attr")
+        public String foo;
+
+        @Xml("bar,attr")
+        public int bar;
+    }
 }

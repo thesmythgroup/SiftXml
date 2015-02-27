@@ -1,4 +1,4 @@
-package org.tsg.siftxml;
+package com.codesmyth.siftxml;
 
 import org.kxml2.io.KXmlParser;
 import org.xmlpull.v1.XmlPullParser;

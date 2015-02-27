@@ -1,4 +1,4 @@
-package org.tsg.siftxml;
+package com.codesmyth.siftxml;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,8 +1,7 @@
 apply plugin: 'java'
-apply plugin: 'ivy-publish'
+apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.7
-version = '0.1-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -27,20 +26,17 @@ task sourceJar(type: Jar) {
 
 publishing {
     publications {
-        ivyJava(IvyPublication) {
+        siftxml(MavenPublication) {
             from components.java
-            organisation 'org.tsg.siftxml'
-            module 'siftxml'
-            revision version
-            artifact(sourceJar) {
-                type "source"
-                conf "runtime"
-            }
+            groupId 'com.codesmyth.siftxml'
+            artifactId 'siftxml'
+            version '0.1-SNAPSHOT'
+            artifact(sourceJar)
         }
     }
     repositories {
-        ivy {
-            url "$projectDir/repo"
+        maven {
+            url "$buildDir/repo"
         }
     }
 }
