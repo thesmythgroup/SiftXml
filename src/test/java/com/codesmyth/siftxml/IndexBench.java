@@ -11,15 +11,15 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 public class IndexBench {
 
-    @Benchmark
-    public Index create() {
-        Index index = new Index();
-        index.create(User.class);
-        return index;
-    }
+  @Benchmark
+  public Index create() {
+    Index index = new Index();
+    index.create(User.class);
+    return index;
+  }
 
-    public class User {
-        public String name;
-        public String email;
-    }
+  public class User {
+    public String name;
+    public String email;
+  }
 }
