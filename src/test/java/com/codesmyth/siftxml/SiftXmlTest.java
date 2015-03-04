@@ -152,4 +152,36 @@ public class SiftXmlTest {
 
     public String desc;
   }
+
+  @Test
+  public void body() throws IOException, XmlPullParserException {
+    Body body = SiftXml.sift(newInputStream(Body.XML), Body.class);
+//    assertEquals("hello text", "World &lt;&gt;&apos;&quot; &#x767d;&#40300;翔", body.hello);
+    assertEquals("hello lang", "en", body.lang);
+  }
+
+  @Xml("body")
+  public static class Body {
+
+    @Xml("hello")
+    public String hello;
+
+    @Xml("hello > lang,attr")
+    public String lang;
+
+    public static final String XML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n" +
+        "  \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
+        "<body xmlns:foo=\"ns1\" xmlns=\"ns2\" xmlns:tag=\"ns3\">\n" +
+        "  <hello lang=\"en\">World &lt;&gt;&apos;&quot; &#x767d;&#40300;翔</hello>\n" +
+        "  <query>&何; &is-it;</query>\n" +
+        "  <goodbye />\n" +
+        "  <outer foo:attr=\"value\" xmlns:tag=\"ns4\">\n" +
+        "    <inner/>\n" +
+        "  </outer>\n" +
+        "  <tag:name>\n" +
+        "    <![CDATA[Some text here.]]>\n" +
+        "  </tag:name>\n" +
+        "</body><!-- missing final newline -->";
+  }
 }

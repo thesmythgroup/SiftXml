@@ -75,6 +75,8 @@ public class SiftXml {
           }
 
           current = newCurrent;
+        } else {
+          setObjectAttributes(current, mParser);
         }
         break;
       case XmlPullParser.END_TAG:
