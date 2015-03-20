@@ -82,6 +82,9 @@ public class SiftXml {
       case XmlPullParser.END_TAG:
         tag = mTracker.toString();
         entry = mIndex.match(tag);
+        if (!entry.isMember() && mIndex.contains(tag + " > ")) {
+          setObjectValue(current, mIndex.match(tag + " > "), acc.read(tag));
+        }
         if (entry.isMember()) {
           String x = acc.read(tag);
           setObjectValue(current, entry, x);
