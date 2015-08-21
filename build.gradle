@@ -1,7 +1,18 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2'
+    }
+}
+
 apply plugin: 'java'
 apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
 
 sourceCompatibility = 1.7
+version = '0.2'
 
 repositories {
     mavenCentral()
@@ -30,7 +41,7 @@ publishing {
             from components.java
             groupId 'com.codesmyth.siftxml'
             artifactId 'siftxml'
-            version '0.1-SNAPSHOT'
+            version '0.2'
             artifact(sourceJar)
         }
     }
@@ -38,5 +49,17 @@ publishing {
         maven {
             url "$buildDir/repo"
         }
+    }
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['siftxml']
+    pkg {
+        repo = 'maven'
+        name = 'siftxml'
+        licenses = ['BSD']
+        vcsUrl = 'https://github.com/dskinner/SiftXml.git'
     }
 }
